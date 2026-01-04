@@ -1,0 +1,39 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "embeddedmc:font/play.png",
+      "ascent": 7,
+      "height": 9,
+      "chars": ["\uE000"]
+    },
+    {
+      "type": "bitmap",
+      "file": "embeddedmc:font/stop.png",
+      "ascent": 7,
+      "height": 9,
+      "chars": ["\uE001"]
+    },
+    {
+      "type": "bitmap",
+      "file": "embeddedmc:font/edit.png",
+      "ascent": 7,
+      "height": 9,
+      "chars": ["\uE002"]
+    },
+    {
+      "type": "bitmap",
+      "file": "embeddedmc:font/delete.png",
+      "ascent": 7,
+      "height": 9,
+      "chars": ["\uE003"]
+    },
+    {
+      "type": "bitmap",
+      "file": "embeddedmc:font/restart.png",
+      "ascent": 7,
+      "height": 9,
+      "chars": ["\uE004"]
+    }
+  ]
+}

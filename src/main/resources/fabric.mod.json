@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "embeddedmc",
+  "version": "${version}",
+  "name": "EmbeddedMC",
+  "description": "Run Paper/Spigot plugins in singleplayer with an embedded server",
+  "authors": ["marti"],
+  "contact": {
+    "homepage": "https://github.com/marti/EmbeddedMC",
+    "sources": "https://github.com/marti/EmbeddedMC"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.embeddedmc.EmbeddedMC"],
+    "client": ["com.embeddedmc.client.EmbeddedMCClient"]
+  },
+  "mixins": ["embeddedmc.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "cloth-config": "*"
+  }
+}
