@@ -16,7 +16,9 @@
 - **Plugin Manager**: Browse and manage installed plugins with built-in config editor
 - **File Browser**: Navigate and edit server files without leaving the game
 - **One-Click Connect**: Start servers and connect automatically
-- **Configurable Settings**: Customize RAM, port, JVM arguments per instance
+- **Auto-Start**: Servers start automatically after creation
+- **Join Button**: Easy-to-use join button for running servers
+- **Configurable Settings**: Customize RAM, port, max players, JVM arguments per instance
 - **Multi-Language Support**: English and German translations included
 
 ## Requirements
@@ -39,14 +41,15 @@
 
 1. Click **"Singleplayer with Plugins"** on the title screen
 2. Click **"Create"** to create a new server instance
-3. Enter a name, select server type (Paper/Purpur/Folia), and choose a Minecraft version
-4. Click **"Create"** - the server JAR will be downloaded automatically
+3. Enter a name, select server type (Paper/Purpur/Folia), choose a Minecraft version
+4. Configure RAM and max player slots (1-100)
+5. Click **"Create"** - the server JAR will be downloaded and the server starts automatically
 
 ### Starting and Connecting
 
 1. Select your server instance from the list
-2. Click **"Start"** to start the server
-3. Once the server is ready, you'll be connected automatically
+2. Click the **Start** button (▶) to start the server - you'll be connected automatically
+3. For running servers, click the **"Join"** button to connect
 4. Use the keybind (configurable) to open the server console while playing
 
 ### Managing Plugins
@@ -76,10 +79,14 @@ embeddedmc/
         └── ...              # Other server files
 ```
 
+### Instance Settings
+
+- **RAM**: Memory allocation (512 MB - 8192 MB, default: 2048 MB)
+- **Max Players**: Maximum player slots (1-100, default: 20)
+- **Port**: Server port (default: 25565)
+
 ### Global Settings
 
-- **Default RAM**: Memory allocation for new instances (default: 2048 MB)
-- **Default Port**: Starting port for new instances (default: 25565)
 - **Java Path**: Path to Java executable (default: system Java)
 - **Auto-Accept EULA**: Automatically accept the Minecraft EULA
 

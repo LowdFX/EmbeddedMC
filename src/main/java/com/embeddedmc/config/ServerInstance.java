@@ -22,6 +22,7 @@ public class ServerInstance {
     private int build;
     private int ramMB;
     private int port;
+    private int maxPlayers;
     private List<String> jvmArgs;
     private boolean autoStart;
     private transient Path instancePath;
@@ -39,6 +40,7 @@ public class ServerInstance {
         this.build = -1; // Latest
         this.ramMB = 2048;
         this.port = 25565;
+        this.maxPlayers = 20;
         this.jvmArgs = new ArrayList<>();
         this.jvmArgs.add("-XX:+UseG1GC");
         this.autoStart = false;
@@ -105,7 +107,7 @@ public class ServerInstance {
             props.setProperty("server-port", String.valueOf(port));
             props.setProperty("online-mode", "false");
             props.setProperty("spawn-protection", "0");
-            props.setProperty("max-players", "1");
+            props.setProperty("max-players", String.valueOf(maxPlayers));
             props.setProperty("level-name", "world");
         }
         return props;
@@ -127,6 +129,8 @@ public class ServerInstance {
         props.setProperty("server-port", String.valueOf(port));
         // Disable spawn protection for singleplayer experience
         props.setProperty("spawn-protection", "0");
+        // Set max players
+        props.setProperty("max-players", String.valueOf(maxPlayers));
         saveServerProperties(props);
     }
 
@@ -151,6 +155,9 @@ public class ServerInstance {
 
     public int getPort() { return port; }
     public void setPort(int port) { this.port = port; }
+
+    public int getMaxPlayers() { return maxPlayers; }
+    public void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
 
     public List<String> getJvmArgs() { return jvmArgs; }
     public void setJvmArgs(List<String> jvmArgs) { this.jvmArgs = jvmArgs; }

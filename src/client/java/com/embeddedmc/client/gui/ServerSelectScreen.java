@@ -157,6 +157,10 @@ public class ServerSelectScreen extends Screen {
         }
     }
 
+    public void joinServer(ServerInstance instance) {
+        connectToServer(instance);
+    }
+
     public void openSettings(ServerInstance instance) {
         this.client.setScreen(new ServerSettingsScreen(this, instance));
     }

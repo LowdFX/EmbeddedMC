@@ -16,12 +16,14 @@ public class ServerSettingsScreen extends Screen {
     private TextFieldWidget nameField;
     private TextFieldWidget portField;
     private int selectedRam;
+    private int selectedSlots;
 
     public ServerSettingsScreen(Screen parent, ServerInstance instance) {
         super(Text.translatable("embeddedmc.screen.server_settings"));
         this.parent = parent;
         this.instance = instance;
         this.selectedRam = instance.getRamMB();
+        this.selectedSlots = instance.getMaxPlayers();
     }
 
     @Override
@@ -60,6 +62,21 @@ public class ServerSettingsScreen extends Screen {
             }
         });
 
+        // Slots slider (1-100 players)
+        this.addDrawableChild(new SliderWidget(centerX - fieldWidth / 2, startY + spacing * 3, fieldWidth, 20,
+                Text.translatable("embeddedmc.label.slots_value", selectedSlots), (selectedSlots - 1) / 99.0) {
+            @Override
+            protected void updateMessage() {
+                selectedSlots = 1 + (int) (this.value * 99);
+                this.setMessage(Text.translatable("embeddedmc.label.slots_value", selectedSlots));
+            }
+
+            @Override
+            protected void applyValue() {
+                selectedSlots = 1 + (int) (this.value * 99);
+            }
+        });
+
         // Server info (read-only)
         // Type and version display
 
@@ -67,25 +84,25 @@ public class ServerSettingsScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.plugins"),
                 button -> this.client.setScreen(new PluginManagerScreen(this, instance))
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 4, fieldWidth, 20).build());
+        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 5, fieldWidth, 20).build());
 
         // Files button (Config Editor)
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.files"),
                 button -> this.client.setScreen(new FileListScreen(this, instance))
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 5, fieldWidth, 20).build());
+        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 6, fieldWidth, 20).build());
 
         // Console button
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.console"),
                 button -> this.client.setScreen(new ConsoleScreen(this, instance))
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 6, fieldWidth, 20).build());
+        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 7, fieldWidth, 20).build());
 
         // Delete button
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.delete"),
                 button -> deleteServer()
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 7, fieldWidth, 20).build());
+        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 8, fieldWidth, 20).build());
 
         // Save button
         this.addDrawableChild(ButtonWidget.builder(
@@ -111,6 +128,7 @@ public class ServerSettingsScreen extends Screen {
         } catch (NumberFormatException ignored) {}
 
         instance.setRamMB(selectedRam);
+        instance.setMaxPlayers(selectedSlots);
 
         try {
             instance.save();
@@ -149,6 +167,7 @@ public class ServerSettingsScreen extends Screen {
         context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.name"), labelX, startY + 6, 0xFFAAAAAA);
         context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.port"), labelX, startY + spacing + 6, 0xFFAAAAAA);
         context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.ram"), labelX, startY + spacing * 2 + 6, 0xFFAAAAAA);
+        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.slots"), labelX, startY + spacing * 3 + 6, 0xFFAAAAAA);
 
         // Render text fields
         this.nameField.render(context, mouseX, mouseY, delta);

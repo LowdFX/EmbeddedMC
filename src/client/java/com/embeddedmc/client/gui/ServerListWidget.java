@@ -49,6 +49,8 @@ public class ServerListWidget extends AlwaysSelectedEntryListWidget<ServerListWi
         private static final int DELETE_ICON_SIZE = 12;
 
         // Action button positions
+        private int joinButtonX = 0;
+        private int joinButtonWidth = 0;
         private int startButtonX = 0;
         private int stopButtonX = 0;
         private int editButtonX = 0;
@@ -97,13 +99,32 @@ public class ServerListWidget extends AlwaysSelectedEntryListWidget<ServerListWi
             buttonY = y + 12;
             int btnX = x + entryWidth - 90;
 
-            // Start/Connect button (▶)
+            // Join button (text) - only when running AND not starting
+            if (isRunning && !isStarting) {
+                Text joinText = Text.translatable("embeddedmc.button.join");
+                joinButtonWidth = client.textRenderer.getWidth(joinText) + 8;
+                joinButtonX = btnX - joinButtonWidth - 4;
+                boolean hoveringJoin = mouseX >= joinButtonX && mouseX <= joinButtonX + joinButtonWidth &&
+                                       mouseY >= buttonY - 2 && mouseY <= buttonY + BUTTON_SIZE + 2;
+                int joinColor = hoveringJoin ? 0xFF55FF55 : 0xFF44AA44;
+                // Draw button background
+                context.fill(joinButtonX - 2, buttonY - 2, joinButtonX + joinButtonWidth, buttonY + BUTTON_SIZE,
+                            hoveringJoin ? 0xFF335533 : 0xFF223322);
+                context.drawTextWithShadow(client.textRenderer, joinText, joinButtonX + 2, buttonY, joinColor);
+            } else {
+                joinButtonX = -1;
+                joinButtonWidth = 0;
+            }
+
+            // Start button (▶) - only when NOT running
             startButtonX = btnX;
-            boolean hoveringStart = mouseX >= startButtonX && mouseX <= startButtonX + BUTTON_SIZE &&
-                                    mouseY >= buttonY && mouseY <= buttonY + BUTTON_SIZE;
-            int startColor = isStarting ? 0xFFFFFF55 : (hoveringStart ? 0xFFFFFFFF : 0xFFCCCCCC);
-            String startIcon = isStarting ? "\uE004" : "\uE000";
-            context.drawTextWithShadow(client.textRenderer, startIcon, startButtonX, buttonY, startColor);
+            if (!isRunning) {
+                boolean hoveringStart = mouseX >= startButtonX && mouseX <= startButtonX + BUTTON_SIZE &&
+                                        mouseY >= buttonY && mouseY <= buttonY + BUTTON_SIZE;
+                int startColor = isStarting ? 0xFFFFFF55 : (hoveringStart ? 0xFFFFFFFF : 0xFFCCCCCC);
+                String startIcon = isStarting ? "\uE004" : "\uE000";
+                context.drawTextWithShadow(client.textRenderer, startIcon, startButtonX, buttonY, startColor);
+            }
 
             // Stop button (■) - only when running
             btnX += 18;
@@ -132,10 +153,11 @@ public class ServerListWidget extends AlwaysSelectedEntryListWidget<ServerListWi
             int deleteColor = hoveringDelete ? 0xFFFFFFFF : 0xFFCCCCCC;
             context.drawTextWithShadow(client.textRenderer, "\uE003", deleteIconX, deleteIconY, deleteColor);
 
-            // Status text (left of buttons)
+            // Status text (left of join button if visible, otherwise left of action buttons) - same line as buttons
             Text statusText = getStatusText();
-            int statusX = x + entryWidth - 145;
-            context.drawTextWithShadow(client.textRenderer, statusText, statusX, y + 2, getStatusColor());
+            int statusWidth = client.textRenderer.getWidth(statusText);
+            int statusX = (joinButtonX >= 0) ? joinButtonX - statusWidth - 8 : x + entryWidth - 95 - statusWidth;
+            context.drawTextWithShadow(client.textRenderer, statusText, statusX, buttonY, getStatusColor());
         }
 
         private Text getStatusText() {
@@ -183,9 +205,16 @@ public class ServerListWidget extends AlwaysSelectedEntryListWidget<ServerListWi
                 }
 
                 // Check action buttons (in button row area)
-                if (mouseY >= buttonY && mouseY <= buttonY + BUTTON_SIZE) {
-                    // Start button
-                    if (mouseX >= startButtonX && mouseX <= startButtonX + BUTTON_SIZE) {
+                if (mouseY >= buttonY - 2 && mouseY <= buttonY + BUTTON_SIZE + 2) {
+                    // Join button (only when visible and not starting)
+                    boolean isRunning = EmbeddedMC.getInstance().getServerManager().isRunning(instance.getId());
+                    boolean isStarting = instance.getStatus() == ServerInstance.ServerStatus.STARTING;
+                    if (isRunning && !isStarting && joinButtonX >= 0 && mouseX >= joinButtonX && mouseX <= joinButtonX + joinButtonWidth) {
+                        parent.joinServer(instance);
+                        return true;
+                    }
+                    // Start button (only when NOT running)
+                    if (!isRunning && mouseX >= startButtonX && mouseX <= startButtonX + BUTTON_SIZE) {
                         // Cooldown check für Start/Stop
                         if (System.currentTimeMillis() - lastActionTime < ACTION_COOLDOWN) {
                             return true; // Ignoriere Klick während Cooldown
@@ -195,7 +224,6 @@ public class ServerListWidget extends AlwaysSelectedEntryListWidget<ServerListWi
                         return true;
                     }
                     // Stop button
-                    boolean isRunning = EmbeddedMC.getInstance().getServerManager().isRunning(instance.getId());
                     if (isRunning && mouseX >= stopButtonX && mouseX <= stopButtonX + BUTTON_SIZE) {
                         // Cooldown check für Start/Stop
                         if (System.currentTimeMillis() - lastActionTime < ACTION_COOLDOWN) {

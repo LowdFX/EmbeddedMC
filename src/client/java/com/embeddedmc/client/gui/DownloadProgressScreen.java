@@ -65,8 +65,11 @@ public class DownloadProgressScreen extends Screen {
                             instance.acceptEula();
                         } catch (Exception ignored) {}
 
-                        // Return to parent screen - user can start server from there
-                        this.client.setScreen(parent);
+                        // Get grandparent screen and create new ServerSelectScreen to start server
+                        Screen grandParent = parent instanceof ServerSelectScreen sss ? sss.getParent() : parent;
+                        ServerSelectScreen selectScreen = new ServerSelectScreen(grandParent);
+                        this.client.setScreen(selectScreen);
+                        selectScreen.startServer(instance);
                     } else {
                         this.error = true;
                         this.statusText = "Download failed!";
@@ -101,10 +104,20 @@ public class DownloadProgressScreen extends Screen {
         context.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF222222);
 
         // Progress bar fill
-        if (progress > 0) {
+        int color = error ? 0xFFFF5555 : (complete ? 0xFF55FF55 : 0xFF5555FF);
+        if (progress >= 0) {
             int fillWidth = (int) (barWidth * (progress / 100.0));
-            int color = error ? 0xFFFF5555 : (complete ? 0xFF55FF55 : 0xFF5555FF);
             context.fill(barX, barY, barX + fillWidth, barY + barHeight, color);
+        } else if (downloading && !error) {
+            // Unknown size - show animated/pulsing bar
+            long time = System.currentTimeMillis() / 10;
+            int pulseWidth = barWidth / 3;
+            int pulseX = (int) ((time % (barWidth + pulseWidth)) - pulseWidth);
+            int startX = Math.max(barX, barX + pulseX);
+            int endX = Math.min(barX + barWidth, barX + pulseX + pulseWidth);
+            if (endX > startX) {
+                context.fill(startX, barY, endX, barY + barHeight, 0xFF5555FF);
+            }
         }
 
         // Progress text

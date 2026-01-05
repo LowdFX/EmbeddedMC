@@ -22,6 +22,7 @@ public class CreateServerScreen extends Screen {
     private ServerType selectedType = ServerType.PAPER;
     private String selectedVersion = "1.21.11";
     private int selectedRam = 2048;
+    private int selectedSlots = 20;
     private List<String> availableVersions;
 
     // Server type buttons
@@ -99,6 +100,21 @@ public class CreateServerScreen extends Screen {
             }
         });
 
+        // Slots slider (1-100 players)
+        this.addDrawableChild(new SliderWidget(centerX - fieldWidth / 2, startY + spacing * 4, fieldWidth, 20,
+                Text.translatable("embeddedmc.label.slots_value", selectedSlots), (selectedSlots - 1) / 99.0) {
+            @Override
+            protected void updateMessage() {
+                selectedSlots = 1 + (int) (this.value * 99);
+                this.setMessage(Text.translatable("embeddedmc.label.slots_value", selectedSlots));
+            }
+
+            @Override
+            protected void applyValue() {
+                selectedSlots = 1 + (int) (this.value * 99);
+            }
+        });
+
         // Create button
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.create"),
@@ -170,16 +186,23 @@ public class CreateServerScreen extends Screen {
 
         if (instance != null) {
             instance.setRamMB(selectedRam);
+            instance.setMaxPlayers(selectedSlots);
             try {
                 instance.save();
             } catch (Exception e) {
                 EmbeddedMC.LOGGER.error("Failed to save instance", e);
             }
-        }
 
-        // Create new ServerSelectScreen to ensure proper refresh
-        Screen grandParent = parent instanceof ServerSelectScreen sss ? sss.getParent() : parent;
-        this.client.setScreen(new ServerSelectScreen(grandParent));
+            // Create new ServerSelectScreen and automatically start the server
+            Screen grandParent = parent instanceof ServerSelectScreen sss ? sss.getParent() : parent;
+            ServerSelectScreen selectScreen = new ServerSelectScreen(grandParent);
+            this.client.setScreen(selectScreen);
+            selectScreen.startServer(instance);
+        } else {
+            // Fallback if instance creation failed
+            Screen grandParent = parent instanceof ServerSelectScreen sss ? sss.getParent() : parent;
+            this.client.setScreen(new ServerSelectScreen(grandParent));
+        }
     }
 
     @Override
@@ -200,6 +223,7 @@ public class CreateServerScreen extends Screen {
         context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.type"), labelX, startY + spacing + 6, 0xFFAAAAAA);
         context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.version"), labelX, startY + spacing * 2 + 6, 0xFFAAAAAA);
         context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.ram"), labelX, startY + spacing * 3 + 6, 0xFFAAAAAA);
+        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.slots"), labelX, startY + spacing * 4 + 6, 0xFFAAAAAA);
 
         // Draw selection indicator around selected server type button
         ButtonWidget selectedButton = switch (selectedType) {
