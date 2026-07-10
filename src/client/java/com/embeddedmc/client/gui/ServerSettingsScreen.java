@@ -18,6 +18,12 @@ public class ServerSettingsScreen extends Screen {
     private int selectedRam;
     private int selectedSlots;
 
+    // Shared layout constants so init() and render() always agree on positions.
+    private static final int FIELD_WIDTH = 200;
+    private static final int COLUMN_GAP = 20;
+    private static final int START_Y = 50;
+    private static final int ROW_SPACING = 30;
+
     public ServerSettingsScreen(Screen parent, ServerInstance instance) {
         super(Text.translatable("embeddedmc.screen.server_settings"));
         this.parent = parent;
@@ -29,24 +35,26 @@ public class ServerSettingsScreen extends Screen {
     @Override
     protected void init() {
         int centerX = this.width / 2;
-        int startY = 50;
-        int fieldWidth = 200;
-        int spacing = 30;
+
+        // Two columns: input fields/sliders on the left, action buttons on the right.
+        int totalWidth = FIELD_WIDTH * 2 + COLUMN_GAP;
+        int leftX = centerX - totalWidth / 2;
+        int rightX = leftX + FIELD_WIDTH + COLUMN_GAP;
 
         // Name field
-        this.nameField = new TextFieldWidget(this.textRenderer, centerX - fieldWidth / 2, startY, fieldWidth, 20, Text.translatable("embeddedmc.label.name"));
+        this.nameField = new TextFieldWidget(this.textRenderer, leftX, START_Y, FIELD_WIDTH, 20, Text.translatable("embeddedmc.label.name"));
         this.nameField.setText(instance.getName());
         this.nameField.setMaxLength(32);
         this.addSelectableChild(this.nameField);
 
         // Port field
-        this.portField = new TextFieldWidget(this.textRenderer, centerX - fieldWidth / 2, startY + spacing, fieldWidth, 20, Text.translatable("embeddedmc.label.port"));
+        this.portField = new TextFieldWidget(this.textRenderer, leftX, START_Y + ROW_SPACING, FIELD_WIDTH, 20, Text.translatable("embeddedmc.label.port"));
         this.portField.setText(String.valueOf(instance.getPort()));
         this.portField.setMaxLength(5);
         this.addSelectableChild(this.portField);
 
         // RAM slider
-        this.addDrawableChild(new SliderWidget(centerX - fieldWidth / 2, startY + spacing * 2, fieldWidth, 20,
+        this.addDrawableChild(new SliderWidget(leftX, START_Y + ROW_SPACING * 2, FIELD_WIDTH, 20,
                 Text.literal("RAM: " + selectedRam + " MB"), (selectedRam - 512) / 7680.0) {
             @Override
             protected void updateMessage() {
@@ -63,7 +71,7 @@ public class ServerSettingsScreen extends Screen {
         });
 
         // Slots slider (1-100 players)
-        this.addDrawableChild(new SliderWidget(centerX - fieldWidth / 2, startY + spacing * 3, fieldWidth, 20,
+        this.addDrawableChild(new SliderWidget(leftX, START_Y + ROW_SPACING * 3, FIELD_WIDTH, 20,
                 Text.translatable("embeddedmc.label.slots_value", selectedSlots), (selectedSlots - 1) / 99.0) {
             @Override
             protected void updateMessage() {
@@ -77,32 +85,32 @@ public class ServerSettingsScreen extends Screen {
             }
         });
 
-        // Server info (read-only)
-        // Type and version display
+        // Right-hand action column: aligned with the four rows on the left,
+        // so the block stays exactly as tall as the fields/sliders next to it.
 
         // Plugins button
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.plugins"),
                 button -> this.client.setScreen(new PluginManagerScreen(this, instance))
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 5, fieldWidth, 20).build());
+        ).dimensions(rightX, START_Y, FIELD_WIDTH, 20).build());
 
         // Files button (Config Editor)
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.files"),
                 button -> this.client.setScreen(new FileListScreen(this, instance))
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 6, fieldWidth, 20).build());
+        ).dimensions(rightX, START_Y + ROW_SPACING, FIELD_WIDTH, 20).build());
 
         // Console button
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.console"),
                 button -> this.client.setScreen(new ConsoleScreen(this, instance))
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 7, fieldWidth, 20).build());
+        ).dimensions(rightX, START_Y + ROW_SPACING * 2, FIELD_WIDTH, 20).build());
 
         // Delete button
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("embeddedmc.button.delete"),
                 button -> deleteServer()
-        ).dimensions(centerX - fieldWidth / 2, startY + spacing * 8, fieldWidth, 20).build());
+        ).dimensions(rightX, START_Y + ROW_SPACING * 3, FIELD_WIDTH, 20).build());
 
         // Save button
         this.addDrawableChild(ButtonWidget.builder(
@@ -158,16 +166,16 @@ public class ServerSettingsScreen extends Screen {
         String info = instance.getType().getDisplayName() + " " + instance.getMcVersion();
         context.drawCenteredTextWithShadow(this.textRenderer, info, this.width / 2, 30, 0xFFAAAAAA);
 
-        // Labels
+        // Labels sit to the left of the (left-column) input fields.
         int centerX = this.width / 2;
-        int labelX = centerX - 100 - 90;
-        int startY = 50;
-        int spacing = 30;
+        int totalWidth = FIELD_WIDTH * 2 + COLUMN_GAP;
+        int leftX = centerX - totalWidth / 2;
+        int labelX = leftX - 90;
 
-        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.name"), labelX, startY + 6, 0xFFAAAAAA);
-        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.port"), labelX, startY + spacing + 6, 0xFFAAAAAA);
-        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.ram"), labelX, startY + spacing * 2 + 6, 0xFFAAAAAA);
-        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.slots"), labelX, startY + spacing * 3 + 6, 0xFFAAAAAA);
+        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.name"), labelX, START_Y + 6, 0xFFAAAAAA);
+        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.port"), labelX, START_Y + ROW_SPACING + 6, 0xFFAAAAAA);
+        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.ram"), labelX, START_Y + ROW_SPACING * 2 + 6, 0xFFAAAAAA);
+        context.drawTextWithShadow(this.textRenderer, Text.translatable("embeddedmc.label.slots"), labelX, START_Y + ROW_SPACING * 3 + 6, 0xFFAAAAAA);
 
         // Render text fields
         this.nameField.render(context, mouseX, mouseY, delta);
