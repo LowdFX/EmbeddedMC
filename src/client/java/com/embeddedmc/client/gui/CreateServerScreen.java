@@ -24,6 +24,7 @@ public class CreateServerScreen extends Screen {
     private int selectedRam = 2048;
     private int selectedSlots = 20;
     private List<String> availableVersions;
+    private boolean userSelectedVersion = false;
 
     // Server type buttons
     private ButtonWidget paperButton;
@@ -138,14 +139,20 @@ public class CreateServerScreen extends Screen {
                         default -> List.of("1.21.11");
                     };
                     if (!availableVersions.isEmpty()) {
-                        selectedVersion = availableVersions.get(0);
-                        // Update button on main thread
-                        if (client != null) {
-                            client.execute(() -> {
-                                if (versionButton != null) {
-                                    versionButton.setMessage(Text.literal(selectedVersion));
-                                }
-                            });
+                        // Only default to the newest version if the user hasn't
+                        // explicitly picked one themselves - otherwise this async
+                        // load can finish after the user's choice and silently
+                        // revert it back to "latest".
+                        if (!userSelectedVersion) {
+                            selectedVersion = availableVersions.get(0);
+                            // Update button on main thread
+                            if (client != null) {
+                                client.execute(() -> {
+                                    if (versionButton != null) {
+                                        versionButton.setMessage(Text.literal(selectedVersion));
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -160,6 +167,7 @@ public class CreateServerScreen extends Screen {
     private void selectServerType(ServerType type) {
         if (selectedType != type) {
             selectedType = type;
+            userSelectedVersion = false; // available versions differ per type, reset to "latest"
             loadVersions();
         }
     }
@@ -169,6 +177,7 @@ public class CreateServerScreen extends Screen {
             this.client.setScreen(new VersionSelectScreen(this, availableVersions, selectedVersion,
                 version -> {
                     selectedVersion = version;
+                    userSelectedVersion = true;
                     versionButton.setMessage(Text.literal(selectedVersion));
                 }
             ));
